@@ -3,6 +3,7 @@
 import os
 import re
 import concurrent.futures
+import sys
 
 # https://stackoverflow.com/questions/49822552/python-asyncio-typeerror-object-dict-cant-be-used-in-await-expression
 # https://docs.python.org/3/library/concurrent.futures.html
@@ -39,9 +40,9 @@ hostnames = [
 ]
 
 
-def ping_server(hostname):
+def ping_server(hostname, count=10):
     # response = os.system("ping -c 1 " + hostname)
-    response = os.popen("ping -c 10 " + hostname).read()
+    response = os.popen("ping -c {} {}".format(count, hostname)).read()
 
     packets_num, packets_received, packets_loss, total_time = None, None, None, None
     min_delay, avg_delay, max_delay, mdev_delay = None, None, None, None
@@ -68,12 +69,13 @@ def ping_server(hostname):
     return result
 
 
-def main():
+def main(count=10):
     # We can use a with statement to ensure threads are cleaned up promptly
     with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
         # Start the load operations and mark each future with its URL
         future_to_host = {
-            executor.submit(ping_server, hostname): hostname for hostname in hostnames
+            executor.submit(ping_server, hostname, count): hostname
+            for hostname in hostnames
         }
         result = list()
         for future in concurrent.futures.as_completed(future_to_host):
@@ -102,4 +104,16 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    from optparse import OptionParser
+
+    parser = OptionParser()
+    parser.add_option(
+        "-c",
+        "--count",
+        dest="count",
+        type="int",
+        help="counts for the ping command",
+        default=10,
+    )
+    options, _ = parser.parse_args()
+    main(options.count)
