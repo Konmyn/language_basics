@@ -2,13 +2,17 @@
 
 import os
 import re
-import asyncio
+import concurrent.futures
 
 # https://stackoverflow.com/questions/49822552/python-asyncio-typeerror-object-dict-cant-be-used-in-await-expression
+# https://docs.python.org/3/library/concurrent.futures.html
+
 # 10 packets transmitted, 10 received, 0% packet loss, time 9016ms
 # rtt min/avg/max/mdev = 56.799/81.700/108.942/15.579 ms
 
-p_statistic = r"(\d+) packets transmitted, (\d+) received, (\d+)% packet loss, time (\d+)ms"
+p_statistic = (
+    r"(\d+) packets transmitted, (\d+) received, (\d+)% packet loss, time (\d+)ms"
+)
 p_statistic = re.compile(p_statistic)
 
 p_delay = r"rtt min/avg/max/mdev = (\d+.?\d*)/(\d+.?\d*)/(\d+.?\d*)/(\d+.?\d*) ms"
@@ -35,9 +39,9 @@ hostnames = [
 ]
 
 
-async def ping_server(hostname):
+def ping_server(hostname):
     # response = os.system("ping -c 1 " + hostname)
-    response = await os.popen("ping -c 1 " + hostname).read()
+    response = os.popen("ping -c 10 " + hostname).read()
 
     packets_num, packets_received, packets_loss, total_time = None, None, None, None
     min_delay, avg_delay, max_delay, mdev_delay = None, None, None, None
@@ -58,19 +62,44 @@ async def ping_server(hostname):
         "min_delay": min_delay,
         "avg_delay": avg_delay,
         "max_delay": max_delay,
-        "mdev_delay": mdev_delay
+        "mdev_delay": mdev_delay,
     }
 
     return result
 
 
-async def main():
-    tasks = [ping_server(i) for i in hostnames]
-    result = await asyncio.gather(*tasks)
-    print(result)
+def main():
+    # We can use a with statement to ensure threads are cleaned up promptly
+    with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
+        # Start the load operations and mark each future with its URL
+        future_to_host = {
+            executor.submit(ping_server, hostname): hostname for hostname in hostnames
+        }
+        result = list()
+        for future in concurrent.futures.as_completed(future_to_host):
+            host = future_to_host[future]
+            try:
+                data = future.result()
+            except Exception as exc:
+                print(host, exc)
+            else:
+                # print(host, data)
+                data["host"] = host
+                result.append(data)
+        result = sorted(
+            result,
+            key=lambda x: (
+                int(x["packets_loss"]),
+                float(x["avg_delay"]) if x["avg_delay"] else 9999,
+            ),
+        )
+        for i in result:
+            print(
+                "{}:  packets_loss {:>3}%  avg_delay {}".format(
+                    i["host"], i["packets_loss"], i["avg_delay"]
+                )
+            )
 
 
 if __name__ == "__main__":
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(main())
-    loop.close()
+    main()
