@@ -3,7 +3,6 @@
 import os
 import re
 import concurrent.futures
-import sys
 
 # https://stackoverflow.com/questions/49822552/python-asyncio-typeerror-object-dict-cant-be-used-in-await-expression
 # https://docs.python.org/3/library/concurrent.futures.html
@@ -19,25 +18,14 @@ p_statistic = re.compile(p_statistic)
 p_delay = r"rtt min/avg/max/mdev = (\d+.?\d*)/(\d+.?\d*)/(\d+.?\d*)/(\d+.?\d*) ms"
 p_delay = re.compile(p_delay)
 
-hostnames = [
-    "jp.a.cloudss.win",
-    "hk.a.cloudss.win",
-    "hk.b.cloudss.win",
-    "hk.c.cloudss.win",
-    "hk.d.cloudss.win",
-    "sg.a.cloudss.win",
-    "sg.b.cloudss.win",
-    "kr.a.cloudss.win",
-    "kr.b.cloudss.win",
-    "tw.a.cloudss.win",
-    "tw.b.cloudss.win",
-    "us.a.cloudss.win",
-    "us.b.cloudss.win",
-    "us.c.cloudss.win",
-    "ru.a.cloudss.win",
-    "mo.a.cloudss.win",
-    "in.a.cloudss.win",
-]
+hostnames = list()
+
+with open("ss_host.txt") as f:
+    for i in f.readlines():
+        if i.startswith("#"):
+            continue
+        else:
+            hostnames.append(i.strip())
 
 
 def ping_server(hostname, count=10):
@@ -97,8 +85,12 @@ def main(count=10):
         )
         for i in result:
             print(
-                "{}:  packets_loss {:>3}%  avg_delay {}".format(
-                    i["host"], i["packets_loss"], i["avg_delay"]
+                ("{:>20}" * 3).format(
+                    *(
+                        "{}:".format(i["host"]),
+                        "packets_loss {:>3}%".format(i["packets_loss"]),
+                        "avg_delay {}".format(i["avg_delay"]),
+                    )
                 )
             )
 
