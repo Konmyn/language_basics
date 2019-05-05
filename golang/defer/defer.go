@@ -4,7 +4,7 @@ import (
     "fmt"
     "os"
     "bufio"
-    "errors"
+    //"errors"
 )
 
 func tryDefer() {

@@ -2,6 +2,7 @@
 #
 *.txt
 .idea/
+*.out
 
 __pycache__/
 *.py[cod]

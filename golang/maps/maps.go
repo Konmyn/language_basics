@@ -41,13 +41,15 @@ func main(){
     fmt.Println(maxLenOfNonRepeatSubstr("123ssww"))
     fmt.Println(maxLenOfNonRepeatSubstr("s"))
     fmt.Println(maxLenOfNonRepeatSubstr("yyyyyyyyyyyyyyyy"))
+    fmt.Println(maxLenOfNonRepeatSubstr("中国国中"))
+    fmt.Println(maxLenOfNonRepeatSubstr("这里是慕课网"))
 }
 
 func maxLenOfNonRepeatSubstr(s string) int {
     maxLen := 0
     start := 0
-    lastOccured := make(map[byte]int)
-    for id, ch := range []byte(s){
+    lastOccured := make(map[rune]int)
+    for id, ch := range []rune(s){
         if loc, in := lastOccured[ch]; in && loc >= start {
             start = id + 1
         }
