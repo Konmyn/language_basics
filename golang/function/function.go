@@ -14,6 +14,13 @@ func main() {
 		return int(math.Pow(float64(a), float64(b)))
 	}, 3, 4))
     fmt.Println(sum(1, 2, 3))
+    fmt.Println(calcTriangle(4, 3))
+}
+
+func calcTriangle(a, b int) int {
+    var c int
+    c = int(math.Sqrt(float64(a*a + b*b)))
+    return c
 }
 
 func eval(a, b int, op string) (int, error) {
