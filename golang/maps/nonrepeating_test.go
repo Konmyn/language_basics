@@ -17,7 +17,7 @@ func TestNonRepeating(t *testing.T) {
         // edge cases
         {"s", 1},
         {"", 0},
-        //{"abcabcabcabcd", 4},
+        {"abcabcabcabcd", 4},
         {"yyyyyyyyyyyyyyyy", 1},
 
         // chinese support
@@ -33,7 +33,7 @@ func TestNonRepeating(t *testing.T) {
 
 func BenchmarkNonRepeating(b *testing.B) {
     s := "abcabcabcabcabcabcabcabcabcabcd"
-    a := 3
+    a := 4
     for i := 0; i < b.N; i++ {
         if l := maxLenOfNonRepeatSubstr(s); l != a {
             b.Errorf("maxLenOfNonRepeatSubstr(%s); got %d; expection %d", s, l, a)

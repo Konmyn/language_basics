@@ -51,7 +51,7 @@ func maxLenOfNonRepeatSubstr(s string) int {
     lastOccured := make(map[rune]int)
     for id, ch := range []rune(s){
         if loc, in := lastOccured[ch]; in && loc >= start {
-            start = id + 1
+            start = loc + 1
         }
         if id - start + 1 > maxLen {
             maxLen = id - start + 1
