@@ -3,6 +3,8 @@
 *.txt
 .idea/
 *.out
+*.conf
+*.template
 
 __pycache__/
 *.py[cod]
