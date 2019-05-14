@@ -59,7 +59,7 @@ def ping_server(hostname, count=10):
 
 def main(count=10):
     # We can use a with statement to ensure threads are cleaned up promptly
-    with concurrent.futures.ThreadPoolExecutor(max_workers=20) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=len(hostnames)) as executor:
         # Start the load operations and mark each future with its URL
         future_to_host = {
             executor.submit(ping_server, hostname, count): hostname
