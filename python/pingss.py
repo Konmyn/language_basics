@@ -79,7 +79,7 @@ def main(count=10):
         result = sorted(
             result,
             key=lambda x: (
-                int(x["packets_loss"]),
+                int(x["packets_loss"]) if x["packets_loss"] else 100,
                 float(x["avg_delay"]) if x["avg_delay"] else 9999,
             ),
         )
