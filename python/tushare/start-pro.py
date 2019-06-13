@@ -1,3 +1,4 @@
+import numpy as np
 import pandas
 import tushare as ts
 from datetime import datetime
@@ -181,11 +182,159 @@ def new_stock_list():
 # 日线行情
 # https://tushare.pro/document/2?doc_id=27
 # df = pro.daily(ts_code='000001.SZ', start_date='20180701', end_date='20180718')
+# df = pro.daily(ts_code='000001.SZ')
+# print(df.info())
+
+def daily_k_line(code):
+    daily_k_line_file = 'data/daily-k-{}-{}.csv'.format(code, now_date_str)
+    my_file = Path(daily_k_line_file)
+    if my_file.is_file():
+        name_list = pandas.read_csv(daily_k_line_file, index_col=0, dtype=str)
+        name_list["open"] = name_list["open"].astype(float)
+        name_list["high"] = name_list["high"].astype(float)
+        name_list["low"] = name_list["low"].astype(float)
+        name_list["close"] = name_list["close"].astype(float)
+        name_list["pre_close"] = name_list["pre_close"].astype(float)
+        name_list["change"] = name_list["change"].astype(float)
+        name_list["pct_chg"] = name_list["pct_chg"].astype(float)
+        name_list["vol"] = name_list["vol"].astype(float)
+        name_list["amount"] = name_list["amount"].astype(float)
+    else:
+        name_list = pro.daily(ts_code=code)
+        name_list.to_csv(daily_k_line_file)
+    return name_list
+
+# print(daily_k_line('000001.SZ'))
+
+
+def daily_k_all(date):
+    # 不需要用请求时间进行标记
+    daily_k_all_file = 'data/daily-k-all-{}.csv'.format(date)
+    my_file = Path(daily_k_all_file)
+    if my_file.is_file():
+        name_list = pandas.read_csv(daily_k_all_file, index_col=0, dtype=str)
+        name_list["open"] = name_list["open"].astype(float)
+        name_list["high"] = name_list["high"].astype(float)
+        name_list["low"] = name_list["low"].astype(float)
+        name_list["close"] = name_list["close"].astype(float)
+        name_list["pre_close"] = name_list["pre_close"].astype(float)
+        name_list["change"] = name_list["change"].astype(float)
+        name_list["pct_chg"] = name_list["pct_chg"].astype(float)
+        name_list["vol"] = name_list["vol"].astype(float)
+        name_list["amount"] = name_list["amount"].astype(float)
+    else:
+        name_list = pro.daily(trade_date=date)
+        name_list.to_csv(daily_k_all_file)
+    return name_list
+
+
+def scatter_with_histgram():
+    # Fixing random state for reproducibility
+    np.random.seed(19680801)
+
+    kinfo = daily_k_all('20190612')
+    close_prices = kinfo["close"].values
+    pct_changes = kinfo["pct_chg"].values
+    x = kinfo["close"].values
+    y = kinfo["pct_chg"].values
+
+    # definitions for the axes
+    left, width = 0.1, 0.65
+    bottom, height = 0.1, 0.65
+    spacing = 0.005
+
+    rect_scatter = [left, bottom, width, height]
+    rect_histx = [left, bottom + height + spacing, width, 0.2]
+    rect_histy = [left + width + spacing, bottom, 0.2, height]
+
+    # start with a rectangular Figure
+    plt.figure(figsize=(8, 8))
+
+    ax_scatter = plt.axes(rect_scatter)
+    ax_scatter.tick_params(direction='in', top=True, right=True)
+    ax_histx = plt.axes(rect_histx)
+    ax_histx.tick_params(direction='in', labelbottom=False)
+    ax_histy = plt.axes(rect_histy)
+    ax_histy.tick_params(direction='in', labelleft=False)
+
+
+    # the scatter plot:
+    ax_scatter.scatter(x, y)
+
+    # now determine nice limits by hand:
+    binwidth = 0.25
+    lim = np.ceil(np.abs([x, y]).max() / binwidth) * binwidth
+    x_lim = lim
+    y_lim = 11
+    # ax_scatter.set_xlim((-5, lim))
+    ax_scatter.set_ylim((-y_lim, y_lim))
+
+    ax_scatter.semilogx([1, 10, 100, 1000], [1, 10, 100, 1000])
+
+    bins = np.arange(-lim, lim + binwidth, binwidth)
+    ax_histx.hist(x, bins=bins)
+    ax_histy.hist(y, bins=bins, orientation='horizontal')
+
+    ax_histx.set_xlim(ax_scatter.get_xlim())
+    ax_histx.semilogx([1, 10, 100], [1, 10, 100])
+    ax_histy.set_ylim(ax_scatter.get_ylim())
+
+    plt.show()
+
+scatter_with_histgram()
+
+# A股复权行情
+# https://tushare.pro/document/2?doc_id=146
+#取000001的前复权行情
+# df = ts.pro_bar(ts_code='000001.SZ', adj='qfq', end_date='20190612')
 # print(df)
+# #取000001的后复权行情
+# df = ts.pro_bar(ts_code='000001.SZ', adj='hfq', start_date='20180101', end_date='20181011')
+# print(df)
+# 前复权，以当天为基准
+def adjusted_daily_k_line(code):
+    adjusted_daily_k_line_file = 'data/adjusted-daily-k-{}-{}.csv'.format(code, now_date_str)
+    my_file = Path(adjusted_daily_k_line_file)
+    if my_file.is_file():
+        name_list = pandas.read_csv(adjusted_daily_k_line_file, index_col=0, dtype=str)
+        name_list["open"] = name_list["open"].astype(float)
+        name_list["high"] = name_list["high"].astype(float)
+        name_list["low"] = name_list["low"].astype(float)
+        name_list["close"] = name_list["close"].astype(float)
+        name_list["pre_close"] = name_list["pre_close"].astype(float)
+        name_list["change"] = name_list["change"].astype(float)
+        name_list["pct_chg"] = name_list["pct_chg"].astype(float)
+        name_list["vol"] = name_list["vol"].astype(float)
+        name_list["amount"] = name_list["amount"].astype(float)
+    else:
+        name_list = ts.pro_bar(ts_code=code, adj='qfq', end_date=now_date_str)
+        name_list.to_csv(adjusted_daily_k_line_file)
+    return name_list
+
+# print(adjusted_daily_k_line('000001.SZ').info())
+
 
 # 复权因子
 # https://tushare.pro/document/2?doc_id=28
 # df = pro.adj_factor(ts_code='000001.SZ', trade_date='')
 # print(df)
+
+
+def adjust_factor(code):
+    adjusted_factor_file = 'data/adjusted-factor-{}-{}.csv'.format(code, now_date_str)
+    my_file = Path(adjusted_factor_file)
+    if my_file.is_file():
+        name_list = pandas.read_csv(adjusted_factor_file, index_col=0, dtype=str)
+        name_list["adj_factor"] = name_list["adj_factor"].astype(float)
+    else:
+        name_list = pro.adj_factor(ts_code=code)
+        name_list.to_csv(adjusted_factor_file)
+    return name_list
+
+
+# print(adjust_factor('000001.SZ').info())
+
+
+
 
 
