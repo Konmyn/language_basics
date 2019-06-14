@@ -207,6 +207,21 @@ def daily_k_line(code):
 # print(daily_k_line('000001.SZ'))
 
 
+def close_price_line():
+    # simple line plot, it's too slow
+    stock = daily_k_line('000001.SZ')
+    # https://stackoverflow.com/questions/20444087/right-way-to-reverse-pandas-dataframe
+    stock = stock.reindex(index=stock.index[::-1])
+    plt.plot(stock["trade_date"], stock["close"])
+    plt.xticks(rotation=90)
+    plt.xlabel("date")
+    plt.ylabel("price")
+    plt.title("000001.SZ")
+    plt.show()
+
+# close_price_line()
+
+
 def daily_k_all(date):
     # 不需要用请求时间进行标记
     daily_k_all_file = 'data/daily-k-all-{}.csv'.format(date)
@@ -281,7 +296,7 @@ def scatter_with_histgram():
 
     plt.show()
 
-scatter_with_histgram()
+# scatter_with_histgram()
 
 # A股复权行情
 # https://tushare.pro/document/2?doc_id=146

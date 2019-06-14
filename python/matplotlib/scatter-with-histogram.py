@@ -25,11 +25,11 @@ rect_histy = [left + width + spacing, bottom, 0.2, height]
 plt.figure(figsize=(8, 8))
 
 ax_scatter = plt.axes(rect_scatter)
-ax_scatter.tick_params(direction='in', top=True, right=True)
+ax_scatter.tick_params(direction="in", top=True, right=True)
 ax_histx = plt.axes(rect_histx)
-ax_histx.tick_params(direction='in', labelbottom=False)
+ax_histx.tick_params(direction="in", labelbottom=False)
 ax_histy = plt.axes(rect_histy)
-ax_histy.tick_params(direction='in', labelleft=False)
+ax_histy.tick_params(direction="in", labelleft=False)
 
 # the scatter plot:
 ax_scatter.scatter(x, y)
@@ -42,7 +42,7 @@ ax_scatter.set_ylim((-lim, lim))
 
 bins = np.arange(-lim, lim + binwidth, binwidth)
 ax_histx.hist(x, bins=bins)
-ax_histy.hist(y, bins=bins, orientation='horizontal')
+ax_histy.hist(y, bins=bins, orientation="horizontal")
 
 ax_histx.set_xlim(ax_scatter.get_xlim())
 ax_histy.set_ylim(ax_scatter.get_ylim())
