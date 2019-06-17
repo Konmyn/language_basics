@@ -11,7 +11,7 @@ PATH = "/data/registry/"
 
 def main(path):
 
-    with open('credentials.json', 'r') as f:
+    with open('credentials-lab.json', 'r') as f:
         conn_info = json.loads(f.read())
     s3_conn = boto3.resource(
         's3',
