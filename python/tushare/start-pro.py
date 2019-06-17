@@ -350,6 +350,105 @@ def adjust_factor(code):
 # print(adjust_factor('000001.SZ').info())
 
 
+# 每日指标
+# https://tushare.pro/document/2?doc_id=32
+# df = pro.daily_basic(ts_code='', trade_date='20180726', fields='ts_code,trade_date,turnover_rate,volume_ratio,pe,pb')
+# df = pro.daily_basic(trade_date='20180726')
+# print(df)
 
 
+def daily_technical_all(date):
+    # 不需要用请求时间进行标记
+    daily_technical_all_file = 'data/daily-technical-all-{}.csv'.format(date)
+    my_file = Path(daily_technical_all_file)
+    if my_file.is_file():
+        name_list = pandas.read_csv(daily_technical_all_file, index_col=0)
+        name_list["trade_date"] = name_list["trade_date"].astype(str)
+    else:
+        name_list = pro.daily_basic(trade_date=date)
+        name_list.to_csv(daily_technical_all_file)
+    return name_list
+
+
+# print(daily_technical_all('20180726').head())
+
+
+# 指数基本信息
+# https://tushare.pro/document/2?doc_id=94
+# MSCI 	MSCI指数
+# CSI 	中证指数
+# SSE 	上交所指数
+# SZSE 	深交所指数
+# CICC 	中金所指数
+# SW 	申万指数
+# OTH 	其他指数
+# df = pro.index_basic(market='SW')
+# print(df)
+
+
+def index_basic_info(mkt):
+    index_basic_info_file = 'data/index-basic-info-{}-{}.csv'.format(mkt, now_date_str)
+    my_file = Path(index_basic_info_file)
+    if my_file.is_file():
+        name_list = pandas.read_csv(index_basic_info_file, index_col=0, dtype=str)
+        name_list["base_point"] = name_list["base_point"].astype(float)
+    else:
+        name_list = pro.index_basic(market=mkt)
+        name_list.to_csv(index_basic_info_file)
+    return name_list
+
+
+# print(index_basic_info('SW').info())
+
+# 指数日线行情
+# https://tushare.pro/document/2?doc_id=95
+
+# df = pro.index_daily(ts_code='000001.SH')
+# print(df)
+
+
+def index_k_line(code):
+    index_k_line_file = 'data/index-k-line-{}-{}.csv'.format(code, now_date_str)
+    my_file = Path(index_k_line_file)
+    if my_file.is_file():
+        name_list = pandas.read_csv(index_k_line_file, index_col=0)
+        name_list["trade_date"] = name_list["trade_date"].astype(str)
+    else:
+        name_list = pro.index_daily(ts_code=code)
+        name_list.to_csv(index_k_line_file)
+    return name_list
+
+
+# print(index_k_line('000001.SH').info())
+
+
+# 大盘指数每日指标
+# https://tushare.pro/document/2?doc_id=128
+# 目前只提供上证综指，深证成指，上证50，中证500，中小板指，创业板指的每日指标数据
+# df = pro.index_dailybasic(trade_date='20181018', fields='ts_code,trade_date,turnover_rate,pe')
+# df = pro.index_dailybasic(trade_date='20181018')
+# print(df)
+
+
+def index_technical(date):
+    index_technical_file = 'data/index-technical-{}.csv'.format(date)
+    my_file = Path(index_technical_file)
+    if my_file.is_file():
+        name_list = pandas.read_csv(index_technical_file, index_col=0)
+        name_list["trade_date"] = name_list["trade_date"].astype(str)
+    else:
+        name_list = pro.index_dailybasic(trade_date=date)
+        name_list.to_csv(index_technical_file)
+    return name_list
+
+
+# print(index_technical("20181018").info())
+
+
+# 指数成分和权重
+# https://tushare.pro/document/2?doc_id=96
+
+# df = pro.index_weight(index_code='000001.SH', start_date='20180901', end_date='20180930')
+# df = pro.index_weight(index_code='000001.SH')
+# print(df)
 

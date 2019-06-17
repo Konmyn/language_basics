@@ -1,11 +1,11 @@
 #! /usr/bin/env python3
 # http://docs.ceph.com/docs/master/radosgw/s3/python/
 
-import boto
+import json
 import boto.s3.connection
 
-# "access_key": "WT43H5PBKCPRH9WA2Z9A",
-# "secret_key": "sgzOdZN380vBAXtyhjBX4jDmHM3ETmU8TxHjp5ED"
+with open('credentials.json', 'r') as f:
+    conn_info = json.loads(f.read())
 
 access_key = "WT43H5PBKCPRH9WA2Z9A"
 secret_key = "sgzOdZN380vBAXtyhjBX4jDmHM3ETmU8TxHjp5ED"
@@ -18,7 +18,7 @@ conn = boto.connect_s3(
     aws_secret_access_key=secret_key,
     host=host,
     port=port,
-    is_secure=False,  # uncomment if you are not using ssl
+    is_secure=True,  # uncomment if you are not using ssl
     calling_format=boto.s3.connection.OrdinaryCallingFormat(),
 )
 
@@ -28,7 +28,8 @@ print("make conn..")
 
 # bucket = conn.create_bucket('k8s-lab-harbor')
 
-k8s_harbor = conn.get_bucket("k8s-lab-harbor")
+# k8s_harbor = conn.get_bucket("k8s-lab-harbor")
+k8s_harbor = conn.get_bucket("harbor-image")
 
 # print(k8s_harbor)
 
