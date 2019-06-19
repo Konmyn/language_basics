@@ -47,6 +47,10 @@ def get_calender():
 # get_calender().plot(x="cal_date", y="is_open", style='o')
 # plt.show()
 
+# print(get_calender().info())
+# exchange    10605 non-null object
+# cal_date    10605 non-null object
+# is_open     10605 non-null int64
 
 # 股票列表
 # https://tushare.pro/document/2?doc_id=25
@@ -371,6 +375,20 @@ def daily_technical_all(date):
 
 
 # print(daily_technical_all('20180726').head())
+
+def get_all_technical():
+    start_date = "20050101"
+    end = datetime.now().strftime("%Y%m%d")
+    calender = get_calender()
+    # https://cmdlinetips.com/2018/12/how-to-loop-through-pandas-rows-or-how-to-iterate-over-pandas-rows/
+    for index, row in calender.iterrows():
+        if end >= row["cal_date"] >= "20050101" and row["is_open"] == 1:
+            daily_technical_all(row["cal_date"])
+        else:
+            continue
+
+
+# get_all_technical()
 
 
 # 指数基本信息
