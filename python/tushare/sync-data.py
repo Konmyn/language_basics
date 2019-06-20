@@ -2,7 +2,7 @@ import time
 import os
 import pandas
 import tushare as ts
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 
@@ -11,6 +11,7 @@ ts.set_token(token)
 
 pro = ts.pro_api()
 now_str = datetime.now().strftime("%Y%m%d")
+yesterday_str = (datetime.now() - timedelta(days=1)).strftime("%Y%m%d")
 
 root_path = "/home/matrix/workspace/stock-data"
 
@@ -30,24 +31,33 @@ list_file = "stock-list-{}.csv"
 def timer(func):
     def wrapper(*args, **kwargs):
         before = time.time()
+        print("runing", func.__name__)
+        print("docs", func.__doc__)
         result = func(*args, **kwargs)
         after = time.time()
-        print("time used:", after - before)
+        print("runing", func.__name__, "time used:", after - before)
         return result
     return wrapper
 
 
+@timer
 def get_calender():
+    """
+    获取股市日历
+    """
     f = daily_technical_file.format(now_str)
     file_path = os.path.join(root_path, calender_path, f)
     my_file = Path(file_path)
     if my_file.is_file():
-        shanghai = pandas.read_csv(file_path, index_col=0)
-        shanghai["cal_date"] = shanghai["cal_date"].astype(str)
+        df = pandas.read_csv(file_path, index_col=0)
+        df["cal_date"] = df["cal_date"].astype(str)
     else:
-        shanghai = pro.trade_cal(exchange='SSE', start_date='19900101', end_date=now_str)
-        shanghai.to_csv(file_path)
-    return shanghai
+        df = pro.trade_cal(exchange='SSE', start_date='19900101', end_date=now_str)
+        df.to_csv(file_path)
+    # 如果时间太早，则删掉今天
+    if datetime.now().hour < 17:
+        df.drop(df.tail(1).index, inplace=True)
+    return df
 
 
 def daily_technical_all(date):
@@ -62,7 +72,11 @@ def daily_technical_all(date):
         return
 
 
+@timer
 def stock_list():
+    """
+    获取今日的股票列表
+    """
     f = list_file.format(now_str)
     file_path = os.path.join(root_path, list_path, f)
     my_file = Path(file_path)
@@ -74,7 +88,11 @@ def stock_list():
         return
 
 
+@timer
 def get_all_technical():
+    """
+    获取所有股票的当日技术指标
+    """
     calender = get_calender()
     # https://cmdlinetips.com/2018/12/how-to-loop-through-pandas-rows-or-how-to-iterate-over-pandas-rows/
     for index, row in calender.iterrows():
@@ -82,9 +100,12 @@ def get_all_technical():
         # 只有第一次会碰到这个问题，以后增量更新时应该不会遇到这种问题
         # requests.exceptions.ConnectionError: HTTPConnectionPool(host='api.waditu.com', port=80): Read timed out.
         if row["is_open"] == 1:
-            print(row["cal_date"])
+            d = row["cal_date"]
+            # print(d)
             try:
-                daily_technical_all(row["cal_date"])
+                if d == now_str and datetime.now().hour < 17:
+                    continue
+                daily_technical_all(d)
             except Exception as e:
                 print(e)
                 raise e
@@ -92,7 +113,6 @@ def get_all_technical():
             continue
 
 
-@timer
 def run():
     get_all_technical()
     stock_list()
