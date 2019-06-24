@@ -5,8 +5,9 @@ import tushare as ts
 from datetime import datetime
 from pathlib import Path
 import logging
+from collections import defaultdict
 
-logFormatter = '%(asctime)s - %(levelname)s - %(message)s'
+logFormatter = '%(asctime)s - %(levelname)s - %(name)s:%(lineno)d - %(message)s'
 logging.basicConfig(format=logFormatter, level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -34,8 +35,12 @@ list_file = "stock-list-{}.csv"
 tech_path = "stock-tech"
 tech_file = "stock-tech-{}.csv"
 
+# 股票指标列表
+tech_path_new = "stock-tech-new"
+tech_file_new = "{}.csv"
+
 # 缓存
-cache = dict()
+cache = defaultdict(list)
 
 
 def timer(func):
@@ -180,28 +185,12 @@ def get_all_stock_technical():
         get_stock_technical(row["symbol"])
 
 
-error_code = set()
-
-
+@timer
 def reformer():
+    """把每日的技术分析转换为每股的技术分析"""
     logger.info("prepare common data")
-    slist = stock_list()
     calender = get_calender()
     logger.info("prepare reformed data")
-    for index, row in slist.iterrows():
-        scode = row["symbol"]
-        cache[scode] = {
-            "data": load_stock_tech(scode),
-            "updated": False,
-            "info": row,
-            "list_date": row["list_date"]
-        }
-        if cache[scode]["data"] is None:
-            cache[scode]["last_update"] = None
-        else:
-            cache[scode]["last_update"] = cache[scode]["data"].index[-1]
-
-    logger.info("ready to reform data")
     for index, row in calender.iterrows():
         date = row["cal_date"]
         if row["is_open"] == 0:
@@ -209,39 +198,27 @@ def reformer():
         before = time.time()
         logger.info("stock data in %s" % date)
         daily_tech_data = daily_technical_all(date)
-        daily_tech_data.ts_code = daily_tech_data.ts_code.str[:6]
-        daily_tech_data = daily_tech_data.set_index("ts_code")
         for dindex, drow in daily_tech_data.iterrows():
-            code = dindex
-            if code in error_code:
-                logger.debug("pass error code %s" % code)
-                continue
-            if code not in cache:
-                logger.warning("%s not in cache" % code)
-                error_code.add(code)
-                continue
-            if cache[code]["list_date"] > drow["trade_date"]:
-                continue
-            if cache[code]["last_update"] is not None and cache[code]["last_update"] >= drow["trade_date"]:
-                continue
-            df = daily_tech_data.loc[[code]]
-            if cache[code]["data"] is None:
-                cache[code]["data"] = df.set_index("trade_date")
-            else:
-                cache[code]["data"] = cache[code]["data"].append(df.set_index("trade_date"))
-            cache[code]["updated"] = True
-            cache[code]["last_update"] = drow["trade_date"]
+            cache[drow["ts_code"]].append(drow)
         after = time.time()
         logger.info("time cost %s" % (after - before))
 
     logger.info("prepare to save data")
     for i in cache:
-        if cache[i]["updated"]:
-            logger.info("saving %s data" % i)
-            save_stock_tech(i, cache[i]["data"])
+        logger.info("saving %s data" % i)
+        before = time.time()
+        df = pandas.DataFrame(cache.pop(i))
+        save_stock_tech_new(i, df)
+        after = time.time()
+        logger.info("time cost %s" % (after - before))
 
     logger.info("all done")
-    logger.info("error code: %s" % error_code)
+
+
+def save_stock_tech_new(code, data):
+    f = tech_file_new.format(code)
+    file_path = os.path.join(root_path, tech_path_new, f)
+    return data.to_csv(file_path)
 
 
 # 这个脚本要运行大概4个小时，简直无法忍受
@@ -249,6 +226,9 @@ def reformer():
 # 2019-06-21 16:55:35,097 - INFO - all done
 # 2019-06-21 16:55:35,097 - INFO - error code: {'600832', '002604', '000916', '600899', '600001', '000618', '600087', '600878', '600296', '000024', '000562', '000022', '600625', '600656', '600806', '000765', '600003', '600700', '000748', '000658', '600799', '000979', '600253', '600627', '300186', '000956', '600852', '601299', '000522', '600270', '000787', '600659', '600670', '000406', '000047', '000939', '000033', '000769', '600842', '600669', '000515', '000699', '300372', '002680', '600607', '000588', '600092', '600762', '600752', '000578', '600005', '600991', '000689', '000569', '600672', '000730', '600002', '000832', '600263', '000621', '000866', '000015', '000508', '002070', '000602', '600205', '600357', '600813', '300216', '603217', '000817', '000511', '000995', '000827', '600646', '000535', '600632', '000660', '000003', '000527', '600788', '000763', '000805', '600772', '000549', '002260', '000013', '600680', '600286', '600181', '600553', '601268', '000405', '000594', '600102', '600709', '000583', '600591', '300028', '600631', '000693', '000412', '600840', '600065', '000542', '300104', '600472', '000556', '600432', '000675', '000653', '600786'}
 
+
+# 新的脚本比较消耗内存，16G吃满，但耗时有明显降低：
+# runing reformer time used: 1982.0495052337646
 
 if __name__ == "__main__":
     # get_all_stock_technical()
