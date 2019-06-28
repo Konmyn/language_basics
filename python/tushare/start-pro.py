@@ -62,13 +62,35 @@ def stock_list():
     my_file = Path(stock_list_file)
     if my_file.is_file():
         # https://stackoverflow.com/questions/49684951/pandas-read-csv-dtype-read-all-columns-but-few-as-string
-        stocks = pandas.read_csv(stock_list_file, index_col=0, dtype=str)
+        df = pandas.read_csv(stock_list_file, index_col=0, dtype=str)
     else:
-        stocks = pro.stock_basic()
-        stocks.to_csv(stock_list_file)
-    return stocks
+        df = pro.stock_basic()
+        df.to_csv(stock_list_file)
+    df['list_date'] = pandas.to_datetime(df['list_date'])
+    return df
 
-# print(stock_list().info())
+
+df = stock_list()
+df["ccount"] = 1
+df = df.sort_values('list_date')
+
+print(df.head())
+print(df.info())
+# plt.hist(
+#     df['list_date'], bins=300, color="y", edgecolor="black", linewidth=1.2
+# )
+# # plt.xlabel("score")
+# # plt.ylabel("count")
+# # plt.title("Grade distribution")
+
+# https://stackoverflow.com/questions/27365467/can-pandas-plot-a-histogram-of-dates
+# df.groupby([df["list_date"].dt.year, df["list_date"].dt.month]).count().plot(kind="line")
+# df.groupby([df["list_date"].dt.year]).count().plot(kind="bar")
+# df.groupby([df["list_date"].dt.month]).count().plot(kind="bar")
+
+plt.plot(df.list_date, df.ccount.cumsum())
+plt.grid(True)
+plt.show()
 
 
 # 股票曾用名
