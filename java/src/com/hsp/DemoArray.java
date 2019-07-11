@@ -38,6 +38,10 @@ public class DemoArray {
 }
 
 class Clerk {
+    public String getName() {
+        return name;
+    }
+
     private String name;
     private String age;
     private double sal;
