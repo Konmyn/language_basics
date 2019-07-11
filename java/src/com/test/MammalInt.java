@@ -1,4 +1,4 @@
-package animals;
+package com.test;
  
 /* 文件名 : MammalInt.java */
 public class MammalInt implements Animal{

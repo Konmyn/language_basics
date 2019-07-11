@@ -1,3 +1,5 @@
+package com.hsp;
+
 import java.io.*;
 
 public class CompareNum{

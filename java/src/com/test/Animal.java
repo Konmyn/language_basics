@@ -1,5 +1,5 @@
 /* 文件名: Animal.java */
-package animals;
+package com.test;
  
 interface Animal {
    public void eat();

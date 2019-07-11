@@ -1,3 +1,5 @@
+package com.hsp;
+
 public class Pyramid {
     public static void main (String []args) {
         int layer = 10;
