@@ -117,4 +117,5 @@ venv.bak/
 
 *.class
 *.iml
+java/out/
 
