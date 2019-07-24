@@ -8,7 +8,10 @@ brokers = ["10.1.10.207:9092", "10.1.10.208:9092", "10.1.10.209:9092"]
 # topic = "fluentd.log.application"
 # topic = "fluentd.log.kubernetes"
 # topic = "filebeats.log.application"
-topic = "fluentbit.application"
+# topic = "fluentbit.application"
+# topic = "fluentbit.container"
+# topic = "fluentbit.systemd"
+topic = "vm-filebeats"
 
 
 partition0 = TopicPartition(topic, 0)

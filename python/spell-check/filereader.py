@@ -1,3 +1,4 @@
+# old version spell check, very naive
 import os
 import re
 import sys
