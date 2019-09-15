@@ -12,6 +12,8 @@ def receive_signal(signum, stack):
 # Register signal handlers
 signal.signal(signal.SIGUSR1, receive_signal)
 signal.signal(signal.SIGUSR2, receive_signal)
+signal.signal(signal.SIGTERM, receive_signal)
+signal.signal(signal.SIGINT, receive_signal)
 
 # Print the process ID so it can be used with 'kill'
 # to send this program signals.
