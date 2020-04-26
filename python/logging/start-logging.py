@@ -49,3 +49,6 @@ logger.error("more serious problem")
 logger.warning("an unexpected event")
 logger.info("show user flow through program")
 logger.debug("used to track variables when coding")
+
+a = "apiVersion: v1\nkind: Service\nmetadata:\n  creationTimestamp: \"2019-11-08T03:36:34Z\"\n  "
+logger.info(a)
